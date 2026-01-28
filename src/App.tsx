@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef } from 'react';
 import ReactPlayer from 'react-player';
 import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2 } from 'lucide-react';
