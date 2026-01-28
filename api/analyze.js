@@ -19,8 +19,8 @@ export default async function handler(request, response) {
 
     const genAI = new GoogleGenerativeAI(API_KEY);
 
-    // Use gemini-2.0-flash (Available to user, revert from lite)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Use gemini-2.0-flash-001 (Version pinned to force update)
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-001" });
 
     // Reconstruct the prompt parts
     const PROMPT_TEMPLATE = `
