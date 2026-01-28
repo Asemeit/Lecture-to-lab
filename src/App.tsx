@@ -271,17 +271,21 @@ function App() {
 
           <div className="relative flex-1 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
             {/* @ts-ignore: ReactPlayer types are mismatching with ref */}
-            <ReactPlayer
-              ref={playerRef}
-              url={videoUrl}
-              width="100%"
-              height="100%"
-              // @ts-ignore
-              playing={playing}
-              controls={true}
-              onProgress={handleProgress}
-              style={{ position: 'absolute', top: 0, left: 0 }}
-            />
+            {(() => {
+              const Player = ReactPlayer as any;
+              return (
+                <Player
+                  ref={playerRef}
+                  url={videoUrl}
+                  width="100%"
+                  height="100%"
+                  playing={playing}
+                  controls={true}
+                  onProgress={handleProgress}
+                  style={{ position: 'absolute', top: 0, left: 0 }}
+                />
+              );
+            })()}
 
             {/* GHOST OVERLAY */}
             <GhostOverlay currentCode={ghostCode} isVisible={showGhost} />
