@@ -45,6 +45,8 @@ export const KnowledgeGraph = ({ data }: { data: any }) => {
                 <div className="flex items-center justify-center h-full text-gray-500 italic text-xs">
                     Graph Waiting for Analysis...
                 </div>
+            ) : dimensions.width === 0 ? (
+                null // Wait for observer to measure before first render to avoid 0x0 or stretch
             ) : (
                 <ForceGraph2D
                     ref={fgRef}

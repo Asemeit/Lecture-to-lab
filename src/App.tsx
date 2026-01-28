@@ -270,7 +270,7 @@ function App() {
         <section className="col-span-6 flex flex-col relative">
           {/* AMBIENT GLOW REMOVED */}
 
-          <div className="relative flex-1 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+          <div className="relative flex-1 rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black aspect-video">
             {/* @ts-ignore: ReactPlayer types are mismatching with ref */}
             {(() => {
               const Player = ReactPlayer as any;
