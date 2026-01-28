@@ -18,9 +18,8 @@ export default async function handler(request, response) {
     const { input, isFile, mimeType } = request.body;
 
     const genAI = new GoogleGenerativeAI(API_KEY);
-    // Use gemini-1.5-flash for speed and cost effectiveness
-    // This model string is standard and generally available
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Use gemini-1.5-flash-001 for stability (matches frontend usage)
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
 
     // Reconstruct the prompt parts
     const PROMPT_TEMPLATE = `
