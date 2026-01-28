@@ -18,17 +18,9 @@ export default async function handler(request, response) {
     const { input, isFile, mimeType } = request.body;
 
     const genAI = new GoogleGenerativeAI(API_KEY);
-    // DEBUG: List available models to find out why 404 is happening
-    try {
-      const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
-      const listData = await listResp.json();
-      console.log("DEBUG: Available Models:", JSON.stringify(listData));
-    } catch (e) {
-      console.error("DEBUG: Failed to list models", e);
-    }
 
-    // Use gemini-1.5-flash (Standard)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Use gemini-2.0-flash (Available to user)
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // Reconstruct the prompt parts
     const PROMPT_TEMPLATE = `
