@@ -65,6 +65,8 @@ export const analyzeContent = async (input: string | File) => {
     if (error.message.includes("404") || error.message.includes("Fetch") || error.message.includes("Server Error")) {
       console.warn("⚠️ API Error detected (likely Localhost without Vercel). Switching to SIMULATION MODE.");
       return {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _errorReason: error.message || "Unknown Error",
         title: "Simulated: React Tutorial (Fallback)",
         steps: [
           { time: 10, title: "Introduction", completed: true, code: null },

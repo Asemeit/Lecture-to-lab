@@ -117,8 +117,12 @@ function App() {
         setShowGhost(false);
         setFileInput(null); // Reset file input state
 
-        // Check if it's the fallback data
-        if (data.title?.includes("Simulated")) {
+        // Check if we hit the fallback
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((data as any)._errorReason) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          alert(`Analysis Failed (API Error): ${(data as any)._errorReason}\n\nSwitched to Demo Mode (React Tutorial).`);
+        } else if (data.title?.includes("Simulated")) {
           alert("⚠️ Analysis Failed (API Error). Switched to Demo Mode (React Tutorial).\n\nCheck console for details.");
         } else {
           alert("Analysis Complete! Timeline & Graph Updated.");
@@ -305,9 +309,10 @@ function App() {
         </section>
 
         {/* RIGHT: KNOWLEDGE GRAPH (3 cols) */}
-        <section className={`col-span-3 flex flex-col gap-4 transition-opacity duration-500 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
+        {/* RIGHT: KNOWLEDGE GRAPH (3 cols) */}
+        <section className={`col-span-3 flex flex-col gap-4 h-[500px] transition-opacity duration-500 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
           <h2 className="text-sm uppercase tracking-widest text-gray-400 font-semibold mb-2">Knowledge Graph</h2>
-          <div className="glass-panel rounded-xl flex-1 relative">
+          <div className="glass-panel rounded-xl flex-1 relative overflow-hidden">
             <KnowledgeGraph data={graphData} />
             {/* Overlay Info */}
             <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md p-3 rounded-lg border border-white/10 pointer-events-none">
