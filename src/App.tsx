@@ -393,16 +393,30 @@ function App() {
             <GhostOverlay currentCode={ghostCode} isVisible={showGhost} />
           </div>
 
-          <div className="mt-4 flex justify-between items-center px-2">
-            <div>
-              <h1 className="text-xl font-bold">{videoTitle || "Untitled Analysis"}</h1>
-              <p className="text-gray-400 text-sm">
-                 Chapter {activeStep + 1}: {steps[activeStep]?.title || "Loading..."}
-              </p>
+          <div className="mt-4 flex flex-col gap-2">
+            <div className="flex justify-between items-center px-2">
+                <div>
+                  <h1 className="text-xl font-bold">{videoTitle || "Untitled Analysis"}</h1>
+                  <p className="text-gray-400 text-sm">
+                    Chapter {activeStep + 1}: {steps[activeStep]?.title || "Loading..."}
+                  </p>
+                </div>
+                <button className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                  <Maximize size={20} />
+                </button>
             </div>
-            <button className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
-              <Maximize size={20} />
-            </button>
+            
+            {/* DEBUG UI: Temporary for troubleshooting */}
+            <div className="bg-red-500/20 border border-red-500/50 p-2 rounded text-xs flex gap-4 items-center">
+                <span>[DEBUG] State: {playing ? "PLAYING" : "PAUSED"}</span>
+                <span>URL: {videoUrl.substring(0, 30)}...</span>
+                <button 
+                    onClick={() => setPlaying(!playing)}
+                    className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded font-bold"
+                >
+                    FORCE {playing ? "PAUSE" : "PLAY"}
+                </button>
+            </div>
           </div>
         </section>
 
