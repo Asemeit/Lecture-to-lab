@@ -368,10 +368,25 @@ function App() {
                   height="100%"
                   playing={playing}
                   controls={true}
-                  onProgress={handleProgress}
+                  // Muted is often required for autoplay policies
+                  muted={false} 
+                  onReady={() => {
+                    console.log("Player Ready");
+                    // Only auto-play if we just analyzed or clicked a step
+                    if (videoUrl && !playing) {
+                        setPlaying(true);
+                    }
+                  }}
                   onPlay={() => setPlaying(true)}
                   onPause={() => setPlaying(false)}
+                  onProgress={handleProgress}
+                  onError={(e: any) => console.error("Player Error:", e)}
                   style={{ position: 'absolute', top: 0, left: 0 }}
+                  config={{
+                    youtube: {
+                      playerVars: { showinfo: 1, origin: window.location.origin }
+                    }
+                  }}
             />
 
             {/* GHOST OVERLAY */}
