@@ -369,7 +369,7 @@ function App() {
                   playing={playing}
                   controls={true}
                   // Muted is often required for autoplay policies
-                  muted={false} 
+                  muted={true} 
                   onReady={() => {
                     console.log("Player Ready");
                     // Only auto-play if we just analyzed or clicked a step
