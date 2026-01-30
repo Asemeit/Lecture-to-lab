@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ReactPlayer from 'react-player';
-import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2 } from 'lucide-react';
+import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GhostOverlay } from './components/GhostOverlay';
 import { analyzeContent } from './services/GeminiAnalyzer';
@@ -67,6 +66,34 @@ function App() {
   const [ghostCode, setGhostCode] = useState('');
   const [showGhost, setShowGhost] = useState(false);
 
+  // Persistence: Load data from localStorage on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('lecture-lab-data');
+    if (savedData) {
+      try {
+        const { steps: savedSteps, graph: savedGraph, url: savedUrl } = JSON.parse(savedData);
+        if (savedSteps) setSteps(savedSteps);
+        if (savedGraph) setGraphData(savedGraph);
+        if (savedUrl) setVideoUrl(savedUrl);
+        console.log("Loaded saved session from LocalStorage");
+      } catch (e) {
+        console.error("Failed to parse local storage data", e);
+      }
+    }
+  }, []);
+
+  // Persistence: Save data to localStorage on change
+  useEffect(() => {
+    // debounced save could be better, but this is fine for now
+    const dataToSave = {
+      steps,
+      graph: graphData,
+      url: videoUrl
+    };
+    localStorage.setItem('lecture-lab-data', JSON.stringify(dataToSave));
+  }, [steps, graphData, videoUrl]);
+
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleProgress = (state: any) => {
     const t = state.playedSeconds;
@@ -92,6 +119,18 @@ function App() {
     }
   };
 
+  const handleExport = () => {
+    const markdownContent = `# Analysis: ${videoUrl}\n\n` +
+      steps.map(s => `## ${s.time}s - ${s.title}\n${s.completed ? '[x]' : '[ ]'} ${s.title}\n\n${s.code ? '```jsx\n' + s.code + '\n```' : ''}`).join('\n\n');
+    
+    const blob = new Blob([markdownContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'lecture-notes.md';
+    a.click();
+  };
+
   const handleAnalyze = async () => {
     if (!transcriptInput && !fileInput) return;
     setIsAnalyzing(true);
@@ -102,6 +141,12 @@ function App() {
       if (fileInput) {
         const objectUrl = URL.createObjectURL(fileInput);
         setVideoUrl(objectUrl);
+      } else if (typeof input === 'string') {
+         // Auto-Sync: If input looks like a YT URL, update the main player
+         const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/;
+         if (input.match(youtubeRegex)) {
+            setVideoUrl(input);
+         }
       }
 
       const data = await analyzeContent(input);
@@ -238,9 +283,18 @@ function App() {
           </button>
         </div>
 
-        {/* Cinema Toggle */}
+        {/* Cinema Toggle & Export */}
         <div className="flex items-center gap-3 min-w-fit">
-          <span className="text-xs text-gray-400 font-medium">Cinema Mode</span>
+          <button
+             onClick={handleExport}
+             className="bg-white/5 hover:bg-white/10 text-xs px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 transition-all"
+             title="Download Notes"
+          >
+             <Download size={14} className="text-gray-400"/>
+             <span className="text-gray-300">Export</span>
+          </button>
+          
+          <span className="text-xs text-gray-400 font-medium ml-2">Cinema Mode</span>
           <button
             onClick={() => setCinemaMode(!cinemaMode)}
             className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${cinemaMode ? 'bg-primary' : 'bg-white/10'}`}
