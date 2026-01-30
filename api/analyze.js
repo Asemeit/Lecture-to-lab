@@ -114,10 +114,14 @@ RULES:
     }
     if (!result) throw new Error("Failed after 3 retries due to Quota Limit.");
 
+    // Clean markdown if present and extract JSON
     const textData = result.response.text();
-
-    // Clean markdown if present
-    const jsonString = textData.replace(/```json/g, '').replace(/```/g, '').trim();
+    const jsonMatch = textData.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+       console.error("AI Response (No JSON found):", textData);
+       throw new Error("AI did not return valid JSON.");
+    }
+    const jsonString = jsonMatch[0]; // Extract only the JSON part
     const data = JSON.parse(jsonString);
 
     return response.status(200).json(data);
