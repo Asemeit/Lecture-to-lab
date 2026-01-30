@@ -380,8 +380,12 @@ function App() {
                   onStart={() => {
                     console.log("Player Started");
                     setPlaying(true);
+                    setHasStarted(true);
                   }}
-                  onPlay={() => setPlaying(true)}
+                  onPlay={() => {
+                    setPlaying(true);
+                    setHasStarted(true);
+                  }}
                   onPause={() => setPlaying(false)}
                   onProgress={handleProgress}
                   onError={(e: any) => console.error("Player Error:", e)}
