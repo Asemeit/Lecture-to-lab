@@ -66,15 +66,18 @@ function App() {
   const [ghostCode, setGhostCode] = useState('');
   const [showGhost, setShowGhost] = useState(false);
 
+  const [videoTitle, setVideoTitle] = useState("React Tutorial (Demo)");
+
   // Persistence: Load data from localStorage on mount
   useEffect(() => {
     const savedData = localStorage.getItem('lecture-lab-data');
     if (savedData) {
       try {
-        const { steps: savedSteps, graph: savedGraph, url: savedUrl } = JSON.parse(savedData);
+        const { steps: savedSteps, graph: savedGraph, url: savedUrl, title: savedTitle } = JSON.parse(savedData);
         if (savedSteps) setSteps(savedSteps);
         if (savedGraph) setGraphData(savedGraph);
         if (savedUrl) setVideoUrl(savedUrl);
+        if (savedTitle) setVideoTitle(savedTitle);
         console.log("Loaded saved session from LocalStorage");
       } catch (e) {
         console.error("Failed to parse local storage data", e);
@@ -88,10 +91,11 @@ function App() {
     const dataToSave = {
       steps,
       graph: graphData,
-      url: videoUrl
+      url: videoUrl,
+      title: videoTitle
     };
     localStorage.setItem('lecture-lab-data', JSON.stringify(dataToSave));
-  }, [steps, graphData, videoUrl]);
+  }, [steps, graphData, videoUrl, videoTitle]);
 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,6 +135,8 @@ function App() {
     a.click();
   };
 
+  // ... (handleProgress, handleExport)
+
   const handleAnalyze = async () => {
     if (!transcriptInput && !fileInput) return;
     setIsAnalyzing(true);
@@ -156,6 +162,11 @@ function App() {
         setSteps(data.steps);
         // Ensure graph nodes/links are populated safely
         setGraphData(data.graph || { nodes: [], links: [] });
+        
+        // Update Title
+        if (data.title) {
+            setVideoTitle(data.title);
+        }
 
         setShowAnalyzeModal(false);
         setGhostCode("");
@@ -293,7 +304,7 @@ function App() {
              <Download size={14} className="text-gray-400"/>
              <span className="text-gray-300">Export</span>
           </button>
-          
+
           <span className="text-xs text-gray-400 font-medium ml-2">Cinema Mode</span>
           <button
             onClick={() => setCinemaMode(!cinemaMode)}
@@ -365,8 +376,10 @@ function App() {
 
           <div className="mt-4 flex justify-between items-center px-2">
             <div>
-              <h1 className="text-xl font-bold">Building a Modern React App</h1>
-              <p className="text-gray-400 text-sm">Chapter 1: Setup & Configuration</p>
+              <h1 className="text-xl font-bold">{videoTitle || "Untitled Analysis"}</h1>
+              <p className="text-gray-400 text-sm">
+                 Chapter {activeStep + 1}: {steps[activeStep]?.title || "Loading..."}
+              </p>
             </div>
             <button className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
               <Maximize size={20} />
@@ -374,7 +387,6 @@ function App() {
           </div>
         </section>
 
-        {/* RIGHT: KNOWLEDGE GRAPH (3 cols) */}
         {/* RIGHT: KNOWLEDGE GRAPH (3 cols) */}
         <section className={`col-span-3 flex flex-col gap-4 h-[500px] transition-opacity duration-500 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
           <h2 className="text-sm uppercase tracking-widest text-gray-400 font-semibold mb-2">Knowledge Graph</h2>
