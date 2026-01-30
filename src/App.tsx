@@ -400,6 +400,13 @@ function App() {
                 onClick={() => {
                   setHasStarted(true);
                   setPlaying(true);
+                  // Direct YouTube API call to guarantee playback
+                  if (playerRef.current) {
+                    const internalPlayer = playerRef.current.getInternalPlayer();
+                    if (internalPlayer && typeof internalPlayer.playVideo === 'function') {
+                        internalPlayer.playVideo();
+                    }
+                  }
                 }}
               >
                   <div className="bg-primary/20 hover:bg-primary/40 p-6 rounded-full border-2 border-primary/50 text-primary transition-all group-hover:scale-110 shadow-[0_0_30px_rgba(59,130,246,0.4)]">
