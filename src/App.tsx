@@ -40,10 +40,15 @@ useEffect(() => {
   { time: 180, title: 'State Management', completed: false, code: null },
 ];
 
+
 function App() {
   const [playing, setPlaying] = useState(false);
   const [cinemaMode, setCinemaMode] = useState(false);
   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=k3Vfj-e1Ma4");
+
+  // Force ReactPlayer to accept any ref to avoid TypeScript errors in build
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Player = ReactPlayer as any;
 
   // AI State
   const [steps, setSteps] = useState(INITIAL_STEPS);
@@ -356,7 +361,7 @@ function App() {
           {/* Video Container - Fixed aspect ratio to prevent stretching */}
           <div className="relative w-full h-auto aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
             {/* @ts-ignore: ReactPlayer types are mismatching with ref */}
-            <ReactPlayer
+            <Player
                   ref={playerRef}
                   url={videoUrl}
                   width="100%"
