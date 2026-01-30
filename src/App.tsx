@@ -374,7 +374,6 @@ function App() {
                   url={videoUrl}
                   width="100%"
                   height="100%"
-                  playing={playing}
                   controls={true}
                   onReady={() => console.log("Player Ready")}
                   onStart={() => {
@@ -415,11 +414,11 @@ function App() {
                 </button>
             </div>
             
-            {/* Minimal Status Bar instead of Debug UI */}
+            {/* Minimal Status Bar */}
              <div className="flex gap-2 text-[10px] text-gray-500 font-mono px-2 opacity-50 hover:opacity-100 transition-opacity">
-                <span>STATUS: {playing ? "PLAYING" : "PAUSED"}</span>
+                <span>MODE: NATIVE YOUTUBE</span>
                 <span>•</span>
-                <span>SYNC: {hasStarted ? "ACTIVE" : "WAITING FOR START"}</span>
+                <span>SYNC: ACTIVE</span>
             </div>
           </div>
         </section>
