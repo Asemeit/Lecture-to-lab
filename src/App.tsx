@@ -362,6 +362,7 @@ function App() {
           <div className="relative w-full h-auto aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
             {/* @ts-ignore: ReactPlayer types are mismatching with ref */}
             <Player
+                  key={videoUrl} // FORCE RE-MOUNT ON URL CHANGE
                   ref={playerRef}
                   url={videoUrl}
                   width="100%"
