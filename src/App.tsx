@@ -181,9 +181,10 @@ function App() {
         setShowGhost(false);
         setFileInput(null); // Reset file input state
 
-        // We do NOT setPlaying(true) here anymore because browsers block it async.
+        // We do NOT setPlaying(true) via JS anymore to avoid browser autoplay issues.
+        // User must click Play manually.
+        // Check if we hit the fallback it async.
         // Instead, we rely on the specific "Start Lab" overlay that appears.
-        // setPlaying(true); 
 
         // Check if we hit the fallback
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -375,7 +376,6 @@ function App() {
                   height="100%"
                   playing={playing}
                   controls={true}
-                  light={true} // Shows thumbnail first, then loads player on click
                   onReady={() => console.log("Player Ready")}
                   onStart={() => {
                     console.log("Player Started");
