@@ -369,18 +369,21 @@ function App() {
           <div className="relative w-full h-auto aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
             {/* @ts-ignore: ReactPlayer types are mismatching with ref */}
             <Player
-                  key={videoUrl} // FORCE RE-MOUNT ON URL CHANGE
                   ref={playerRef}
                   url={videoUrl}
                   width="100%"
                   height="100%"
                   playing={playing}
                   controls={true}
-                  // Muted is often required for autoplay policies
-                  muted={false} 
-                  onProgress={handleProgress}
+                  light={true} // Shows thumbnail first, then loads player on click
+                  onReady={() => console.log("Player Ready")}
+                  onStart={() => {
+                    console.log("Player Started");
+                    setPlaying(true);
+                  }}
                   onPlay={() => setPlaying(true)}
                   onPause={() => setPlaying(false)}
+                  onProgress={handleProgress}
                   onError={(e: any) => console.error("Player Error:", e)}
                   style={{ position: 'absolute', top: 0, left: 0 }}
                   config={{
@@ -392,29 +395,6 @@ function App() {
 
             {/* GHOST OVERLAY */}
             <GhostOverlay currentCode={ghostCode} isVisible={showGhost} />
-
-            {/* START OVERLAY: Forces user interaction to allow audio context */}
-            {!hasStarted && !isAnalyzing && (
-              <div 
-                className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer z-30 backdrop-blur-sm group"
-                onClick={() => {
-                  setHasStarted(true);
-                  setPlaying(true);
-                  // Direct YouTube API call to guarantee playback
-                  if (playerRef.current) {
-                    const internalPlayer = playerRef.current.getInternalPlayer();
-                    if (internalPlayer && typeof internalPlayer.playVideo === 'function') {
-                        internalPlayer.playVideo();
-                    }
-                  }
-                }}
-              >
-                  <div className="bg-primary/20 hover:bg-primary/40 p-6 rounded-full border-2 border-primary/50 text-primary transition-all group-hover:scale-110 shadow-[0_0_30px_rgba(59,130,246,0.4)]">
-                      <div className="w-0 h-0 border-t-[15px] border-t-transparent border-l-[25px] border-l-white border-b-[15px] border-b-transparent ml-2" />
-                  </div>
-                  <div className="absolute mt-24 text-white font-bold tracking-widest text-sm uppercase">Tap to Start Lab</div>
-              </div>
-            )}
           </div>
 
           <div className="mt-4 flex flex-col gap-2">
