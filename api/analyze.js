@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { YoutubeTranscript } from 'youtube-transcript';
 
 const API_KEY = process.env.VITE_GEMINI_API_KEY;
 
@@ -28,6 +27,9 @@ export default async function handler(request, response) {
       if (match) {
         console.log("DEBUG: YouTube URL detected. Fetching transcript...");
         try {
+          // Dynamic import to avoid build-time bundling issues with some environments
+          const { YoutubeTranscript } = await import('youtube-transcript');
+          
           const transcriptItems = await YoutubeTranscript.fetchTranscript(input);
           // Combine transcript text
           input = transcriptItems.map(item => item.text).join(' ');
@@ -103,8 +105,8 @@ RULES:
       } catch (e) {
         if (e.message.includes("429") || e.status === 429) {
           attempts++;
-          console.warn(`Hit 429 Rate Limit. Waiting 30s before retry ${attempts}...`);
-          await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30s
+          console.warn(`Hit 429 Rate Limit. Waiting 2s before retry ${attempts}...`);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s (Vercel timeout unsafe)
         } else {
           throw e; // RETHROW other errors
         }
