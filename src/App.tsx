@@ -42,9 +42,11 @@ useEffect(() => {
 
 
 
+// function App() {
+//   const [cinemaMode, setCinemaMode] = useState(false);
+//   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=k3Vfj-e1Ma4");
+
 function App() {
-  const [playing, setPlaying] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false); // Force first interaction
   const [cinemaMode, setCinemaMode] = useState(false);
   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=k3Vfj-e1Ma4");
 
@@ -85,7 +87,6 @@ function App() {
         if (savedUrl) setVideoUrl(savedUrl);
         if (savedTitle) setVideoTitle(savedTitle);
         // On reload, we require interaction again to play, but data is there.
-        setHasStarted(false); 
         console.log("Loaded saved session from LocalStorage");
       } catch (e) {
         console.error("Failed to parse local storage data", e);
@@ -146,8 +147,8 @@ function App() {
   const handleAnalyze = async () => {
     if (!transcriptInput && !fileInput) return;
     setIsAnalyzing(true);
-    setPlaying(false); // Stop any current playback
-    setHasStarted(false); // Reset interaction requirement for new video
+    // setPlaying(false); // Stop any current playback
+    // setHasStarted(false); // Reset interaction requirement for new video
     try {
       const input = fileInput || transcriptInput;
 
@@ -342,8 +343,9 @@ function App() {
                 onClick={() => {
                   console.log('Clicked step:', idx, step.time);
                   playerRef.current?.seekTo(step.time);
-                  setPlaying(true); // Ensure video plays when jumping to a step
-                  setHasStarted(true); // User interacted
+                  // Ensure video plays when jumping to a step
+                  // setPlaying(true); 
+                  // setHasStarted(true); 
                   setActiveStep(idx);
                 }}
                 whileHover={{ scale: 1.02 }}
@@ -378,14 +380,16 @@ function App() {
                   onReady={() => console.log("Player Ready")}
                   onStart={() => {
                     console.log("Player Started");
-                    setPlaying(true);
-                    setHasStarted(true);
+                    // setPlaying(true);
+                    // setHasStarted(true);
                   }}
                   onPlay={() => {
-                    setPlaying(true);
-                    setHasStarted(true);
+                    // setPlaying(true);
+                    // setHasStarted(true);
                   }}
-                  onPause={() => setPlaying(false)}
+                  onPause={() => {
+                    // setPlaying(false);
+                  }}
                   onProgress={handleProgress}
                   onError={(e: any) => console.error("Player Error:", e)}
                   style={{ position: 'absolute', top: 0, left: 0 }}
