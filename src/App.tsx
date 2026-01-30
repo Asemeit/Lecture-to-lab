@@ -41,8 +41,7 @@ useEffect(() => {
 ];
 
 function App() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [playing, _setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [cinemaMode, setCinemaMode] = useState(false);
   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=k3Vfj-e1Ma4");
 
@@ -135,11 +134,10 @@ function App() {
     a.click();
   };
 
-  // ... (handleProgress, handleExport)
-
   const handleAnalyze = async () => {
     if (!transcriptInput && !fileInput) return;
     setIsAnalyzing(true);
+    setPlaying(false); // Stop any current playback
     try {
       const input = fileInput || transcriptInput;
 
@@ -173,6 +171,9 @@ function App() {
         setShowGhost(false);
         setFileInput(null); // Reset file input state
 
+        // Auto-Play the new video!
+        setPlaying(true);
+
         // Check if we hit the fallback
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((data as any)._errorReason) {
@@ -181,7 +182,7 @@ function App() {
         } else if (data.title?.includes("Simulated")) {
           alert("⚠️ Analysis Failed (API Error). Switched to Demo Mode (React Tutorial).\n\nCheck console for details.");
         } else {
-          alert("Analysis Complete! Timeline & Graph Updated.");
+          // alert("Analysis Complete! Timeline & Graph Updated."); // Removing alert for smoother experience
         }
       }
     } catch (e: any) {
@@ -329,6 +330,7 @@ function App() {
                 onClick={() => {
                   console.log('Clicked step:', idx, step.time);
                   playerRef.current?.seekTo(step.time);
+                  setPlaying(true); // Ensure video plays when jumping to a step
                   setActiveStep(idx);
                 }}
                 whileHover={{ scale: 1.02 }}
@@ -354,10 +356,7 @@ function App() {
           {/* Video Container - Fixed aspect ratio to prevent stretching */}
           <div className="relative w-full h-auto aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
             {/* @ts-ignore: ReactPlayer types are mismatching with ref */}
-            {(() => {
-              const Player = ReactPlayer as any;
-              return (
-                <Player
+            <ReactPlayer
                   ref={playerRef}
                   url={videoUrl}
                   width="100%"
@@ -365,10 +364,10 @@ function App() {
                   playing={playing}
                   controls={true}
                   onProgress={handleProgress}
+                  onPlay={() => setPlaying(true)}
+                  onPause={() => setPlaying(false)}
                   style={{ position: 'absolute', top: 0, left: 0 }}
-                />
-              );
-            })()}
+            />
 
             {/* GHOST OVERLAY */}
             <GhostOverlay currentCode={ghostCode} isVisible={showGhost} />
