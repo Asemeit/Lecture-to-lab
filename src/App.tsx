@@ -41,8 +41,10 @@ useEffect(() => {
 ];
 
 
+
 function App() {
   const [playing, setPlaying] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false); // Force first interaction
   const [cinemaMode, setCinemaMode] = useState(false);
   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=k3Vfj-e1Ma4");
 
@@ -82,6 +84,8 @@ function App() {
         if (savedGraph) setGraphData(savedGraph);
         if (savedUrl) setVideoUrl(savedUrl);
         if (savedTitle) setVideoTitle(savedTitle);
+        // On reload, we require interaction again to play, but data is there.
+        setHasStarted(false); 
         console.log("Loaded saved session from LocalStorage");
       } catch (e) {
         console.error("Failed to parse local storage data", e);
@@ -143,6 +147,7 @@ function App() {
     if (!transcriptInput && !fileInput) return;
     setIsAnalyzing(true);
     setPlaying(false); // Stop any current playback
+    setHasStarted(false); // Reset interaction requirement for new video
     try {
       const input = fileInput || transcriptInput;
 
@@ -176,8 +181,9 @@ function App() {
         setShowGhost(false);
         setFileInput(null); // Reset file input state
 
-        // Auto-Play the new video!
-        setPlaying(true);
+        // We do NOT setPlaying(true) here anymore because browsers block it async.
+        // Instead, we rely on the specific "Start Lab" overlay that appears.
+        // setPlaying(true); 
 
         // Check if we hit the fallback
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -336,6 +342,7 @@ function App() {
                   console.log('Clicked step:', idx, step.time);
                   playerRef.current?.seekTo(step.time);
                   setPlaying(true); // Ensure video plays when jumping to a step
+                  setHasStarted(true); // User interacted
                   setActiveStep(idx);
                 }}
                 whileHover={{ scale: 1.02 }}
@@ -370,17 +377,10 @@ function App() {
                   playing={playing}
                   controls={true}
                   // Muted is often required for autoplay policies
-                  muted={true} 
-                  onReady={() => {
-                    console.log("Player Ready");
-                    // Only auto-play if we just analyzed or clicked a step
-                    if (videoUrl && !playing) {
-                        setPlaying(true);
-                    }
-                  }}
+                  muted={false} 
+                  onProgress={handleProgress}
                   onPlay={() => setPlaying(true)}
                   onPause={() => setPlaying(false)}
-                  onProgress={handleProgress}
                   onError={(e: any) => console.error("Player Error:", e)}
                   style={{ position: 'absolute', top: 0, left: 0 }}
                   config={{
@@ -392,9 +392,26 @@ function App() {
 
             {/* GHOST OVERLAY */}
             <GhostOverlay currentCode={ghostCode} isVisible={showGhost} />
+
+            {/* START OVERLAY: Forces user interaction to allow audio context */}
+            {!hasStarted && !isAnalyzing && (
+              <div 
+                className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer z-30 backdrop-blur-sm group"
+                onClick={() => {
+                  setHasStarted(true);
+                  setPlaying(true);
+                }}
+              >
+                  <div className="bg-primary/20 hover:bg-primary/40 p-6 rounded-full border-2 border-primary/50 text-primary transition-all group-hover:scale-110 shadow-[0_0_30px_rgba(59,130,246,0.4)]">
+                      <div className="w-0 h-0 border-t-[15px] border-t-transparent border-l-[25px] border-l-white border-b-[15px] border-b-transparent ml-2" />
+                  </div>
+                  <div className="absolute mt-24 text-white font-bold tracking-widest text-sm uppercase">Tap to Start Lab</div>
+              </div>
+            )}
           </div>
 
           <div className="mt-4 flex flex-col gap-2">
+            {/* ... (Debug UI removed for final version, can restore if needed) */}
             <div className="flex justify-between items-center px-2">
                 <div>
                   <h1 className="text-xl font-bold">{videoTitle || "Untitled Analysis"}</h1>
@@ -407,16 +424,11 @@ function App() {
                 </button>
             </div>
             
-            {/* DEBUG UI: Temporary for troubleshooting */}
-            <div className="bg-red-500/20 border border-red-500/50 p-2 rounded text-xs flex gap-4 items-center">
-                <span>[DEBUG] State: {playing ? "PLAYING" : "PAUSED"}</span>
-                <span>URL: {videoUrl.substring(0, 30)}...</span>
-                <button 
-                    onClick={() => setPlaying(!playing)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded font-bold"
-                >
-                    FORCE {playing ? "PAUSE" : "PLAY"}
-                </button>
+            {/* Minimal Status Bar instead of Debug UI */}
+             <div className="flex gap-2 text-[10px] text-gray-500 font-mono px-2 opacity-50 hover:opacity-100 transition-opacity">
+                <span>STATUS: {playing ? "PLAYING" : "PAUSED"}</span>
+                <span>•</span>
+                <span>SYNC: {hasStarted ? "ACTIVE" : "WAITING FOR START"}</span>
             </div>
           </div>
         </section>
