@@ -73,7 +73,25 @@ RULES:
       promptParts.push(input);
     }
 
-    const result = await model.generateContent(promptParts);
+    // Retry logic for 429 Errors
+    let result;
+    let attempts = 0;
+    while (attempts < 3) {
+      try {
+        result = await model.generateContent(promptParts);
+        break; // Success!
+      } catch (e) {
+        if (e.message.includes("429") || e.status === 429) {
+          attempts++;
+          console.warn(`Hit 429 Rate Limit. Waiting 30s before retry ${attempts}...`);
+          await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30s
+        } else {
+          throw e; // RETHROW other errors
+        }
+      }
+    }
+    if (!result) throw new Error("Failed after 3 retries due to Quota Limit.");
+
     const textData = result.response.text();
 
     // Clean markdown if present
