@@ -1,5 +1,4 @@
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { YoutubeTranscript } from 'youtube-transcript';
 
 const API_KEY = process.env.VITE_GEMINI_API_KEY;
 
@@ -12,20 +11,40 @@ export default async function handler(request, response) {
     console.error("DEBUG: API_KEY is missing from process.env");
     return response.status(500).json({ error: 'Missing VITE_GEMINI_API_KEY in environment variables' });
   }
-  console.log(`DEBUG: API_KEY loaded. Starts with: ${API_KEY.substring(0, 5)}...`);
 
   try {
-    const { input, isFile, mimeType } = request.body;
+    let { input, isFile, mimeType } = request.body;
 
     const genAI = new GoogleGenerativeAI(API_KEY);
 
     // Use gemini-flash-latest (Corresponds to 1.5 Flash - High Quota, Available)
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
+    // Handle YouTube URLs
+    if (!isFile && typeof input === 'string') {
+      const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/;
+      const match = input.match(youtubeRegex);
+      if (match) {
+        console.log("DEBUG: YouTube URL detected. Fetching transcript...");
+        try {
+          const transcriptItems = await YoutubeTranscript.fetchTranscript(input);
+          // Combine transcript text
+          input = transcriptItems.map(item => item.text).join(' ');
+          console.log(`DEBUG: Transcript fetched. Length: ${input.length} chars.`);
+          if (input.length > 100000) {
+             input = input.substring(0, 100000) + "... (Truncated)";
+          }
+        } catch (ytError) {
+          console.error("YouTube Transcript Error:", ytError);
+          throw new Error("Could not fetch YouTube transcript. Video might not have captions or is restricted.");
+        }
+      }
+    }
+
     // Reconstruct the prompt parts
     const PROMPT_TEMPLATE = `
 You are an expert Educational Content Analyzer.
-Your task is to analyze the provided Video Input (Video File or Transcript) and extract structured data for an interactive dashboard.
+Your task is to analyze the provided Video Input (Text Transcript or File) and extract structured data for an interactive dashboard.
 
 RETURN JSON ONLY. NO MARKDOWN.
 
@@ -69,7 +88,7 @@ RULES:
       });
       promptParts.push("Analyze this video/audio file.");
     } else {
-      // Input is text transcript
+      // Input is text transcript (or converted YouTube transcript)
       promptParts.push(input);
     }
 

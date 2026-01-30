@@ -155,12 +155,12 @@ function App() {
                 <Sparkles className="text-secondary" size={20} />
                 Analyze Content
               </h2>
-              <p className="text-xs text-gray-400 mb-4">Paste video transcript, notes, or documentation here. Gemini will generate the timeline and code snippets.</p>
+              <p className="text-xs text-gray-400 mb-4">Paste a YouTube URL, video transcript, or upload a small clip (Max 4.5MB).</p>
 
               {/* Text Input */}
               <textarea
                 className="w-full h-32 bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:outline-none focus:border-secondary resize-none mb-4"
-                placeholder="Paste transcript here..."
+                placeholder="Paste YouTube URL or transcript here..."
                 value={transcriptInput}
                 onChange={(e) => setTranscriptInput(e.target.value)}
                 disabled={!!fileInput}
@@ -175,7 +175,13 @@ function App() {
                   accept="video/*,audio/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) setFileInput(file);
+                    if (file) {
+                      if (file.size > 4500000) {
+                        alert("File too large (>4.5MB). Please use a YouTube URL for long videos.");
+                        return;
+                      }
+                      setFileInput(file);
+                    }
                   }}
                   className="w-full text-xs text-slate-400
                       file:mr-4 file:py-2 file:px-4
@@ -218,7 +224,13 @@ function App() {
           />
 
           <button
-            onClick={() => setShowAnalyzeModal(true)}
+            onClick={() => {
+              // Auto-fill the modal with the current URL if it's not the default demo
+              if (videoUrl && !videoUrl.includes("k3Vfj-e1Ma4")) {
+                 setTranscriptInput(videoUrl);
+              }
+              setShowAnalyzeModal(true);
+            }}
             className="bg-secondary/20 hover:bg-secondary/40 text-secondary border border-secondary/50 px-4 rounded-full text-xs font-bold transition-all flex items-center gap-2"
           >
             <Sparkles size={14} />
