@@ -502,7 +502,7 @@ function App() {
                   url={videoUrl}
                   width="100%"
                   height="100%"
-                  light={true} // Shows thumbnail first (Click-to-Load), fixes autoplay/loading issues
+                  // light={true} // Reverted: Thumbnail failed to load for user. Using standard iframe.
                   controls={true}
                   onReady={() => {
                       console.log("Player Ready");
@@ -591,9 +591,11 @@ function App() {
             
             {/* Minimal Status Bar */}
              <div className="flex gap-2 text-[10px] text-gray-500 font-mono px-2 opacity-50 hover:opacity-100 transition-opacity">
-                <span>MODE: NATIVE YOUTUBE</span>
+                <span>MODE: STANDARD IFRAME</span>
                 <span>•</span>
-                <span>SYNC: ACTIVE</span>
+                <span>STATUS: {playerStatus.toUpperCase()}</span>
+                <span>•</span>
+                <span className="truncate max-w-[200px]">URL: {videoUrl}</span>
             </div>
           </div>
         </section>
