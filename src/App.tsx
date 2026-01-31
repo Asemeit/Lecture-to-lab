@@ -527,42 +527,7 @@ function App() {
 
             {/* STATUS OVERLAY - Simplified for Iframe */}
 
-            {/* STATUS OVERLAY */}
-            <AnimatePresence>
-                {playerStatus === 'loading' && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm cursor-pointer"
-                        onClick={() => setPlayerStatus('ready')} // Manual override
-                        title="Click to force load"
-                    >
-                        <Loader2 className="text-primary animate-spin mb-2" size={32} />
-                        <span className="text-xs text-gray-400 font-mono tracking-widest">CONNECTING STREAM...</span>
-                        <span className="text-[10px] text-gray-600 mt-2">(Click to skip)</span>
-                    </motion.div>
-                )}
-                {playerStatus === 'error' && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-red-900/20 backdrop-blur-md"
-                    >
-                        <X className="text-red-500 mb-2" size={32} />
-                        <span className="text-xs text-red-400 font-bold mb-1">PLAYBACK ERROR</span>
-                        <span className="text-[10px] text-red-300 font-mono">{playerError}</span>
-                    </motion.div>
-                )}
-                {playerStatus === 'ready' && (
-                     <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
-                    >
-                        <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
-                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                             <span className="text-[10px] uppercase font-bold tracking-widest text-white/80">Stream Ready</span>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/* STATUS OVERLAY REMOVED FOR PURE IFRAME VISIBILITY */}
             
             {/* GHOST OVERLAY */}
             <GhostOverlay currentCode={ghostCode} isVisible={showGhost} />
@@ -585,8 +550,6 @@ function App() {
             {/* Minimal Status Bar */}
              <div className="flex gap-2 text-[10px] text-gray-500 font-mono px-2 opacity-50 hover:opacity-100 transition-opacity">
                 <span>MODE: STANDARD IFRAME</span>
-                <span>•</span>
-                <span>STATUS: {playerStatus.toUpperCase()}</span>
                 <span>•</span>
                 <span className="truncate max-w-[200px]">URL: {videoUrl}</span>
             </div>
