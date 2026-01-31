@@ -491,6 +491,7 @@ function App() {
                   url={videoUrl}
                   width="100%"
                   height="100%"
+                  light={true} // Shows thumbnail first (Click-to-Load), fixes autoplay/loading issues
                   controls={true}
                   onReady={() => {
                       console.log("Player Ready");
