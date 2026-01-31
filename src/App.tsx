@@ -357,7 +357,7 @@ function App() {
           </div>
 
           <div className="glass-panel rounded-xl p-4 flex-1 overflow-y-auto space-y-3">
-            {filteredSteps.map((step, idx) => {
+            {filteredSteps.map((step) => {
               const originalIndex = steps.indexOf(step);
               const isActive = activeStep === originalIndex;
 
