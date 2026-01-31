@@ -388,7 +388,7 @@ function App() {
       <main className="pt-20 px-6 pb-6 h-screen grid grid-cols-12 gap-6">
 
         {/* LEFT: TIMELINE (3 cols) */}
-        <section className={`col-span-3 flex flex-col gap-4 transition-opacity duration-500 z-10 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
+        <section className={`col-span-3 flex flex-col gap-4 transition-opacity duration-500 z-10 h-[calc(100vh-8rem)] ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
           
           {/* TABS */}
           <div className="flex p-1 bg-white/5 rounded-lg">
@@ -425,7 +425,7 @@ function App() {
               />
             </div>
 
-            <div className="glass-panel rounded-xl p-4 flex-1 overflow-y-auto space-y-3">
+            <div className="glass-panel rounded-xl p-4 flex-1 overflow-y-auto space-y-3 custom-scrollbar min-h-0">
               {filteredSteps.map((step) => {
                 const originalIndex = steps.indexOf(step);
                 const isActive = activeStep === originalIndex;
