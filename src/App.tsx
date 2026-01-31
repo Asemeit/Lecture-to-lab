@@ -61,6 +61,7 @@ function App() {
 
   const [playerStatus, setPlayerStatus] = useState<'loading' | 'ready' | 'playing' | 'error'>('loading');
   // const [playerError, setPlayerError] = useState(""); // Unused
+  const [mediaType, setMediaType] = useState<'video' | 'audio' | 'pdf'>('video'); // Level 3: Media Type Tracking
 
   // Failsafe: Reset loading state if it takes too long
   useEffect(() => {
@@ -107,7 +108,7 @@ function App() {
     const savedData = localStorage.getItem('lecture-lab-data');
     if (savedData) {
       try {
-        const { steps: savedSteps, graph: savedGraph, url: savedUrl, title: savedTitle, notes: savedNotes, context: savedContext, modules: savedModules } = JSON.parse(savedData);
+        const { steps: savedSteps, graph: savedGraph, url: savedUrl, title: savedTitle, notes: savedNotes, context: savedContext, modules: savedModules, type: savedType } = JSON.parse(savedData);
         if (savedSteps) setSteps(savedSteps);
         if (savedGraph) setGraphData(savedGraph);
         if (savedUrl) setVideoUrl(savedUrl);
@@ -115,6 +116,7 @@ function App() {
         if (savedNotes) setUserNotes(savedNotes);
         if (savedContext) setLabContext(savedContext);
         if (savedModules) setLabModules(savedModules);
+        if (savedType) setMediaType(savedType);
         
         console.log("Loaded saved session from LocalStorage");
       } catch (e) {
@@ -133,10 +135,11 @@ function App() {
       title: videoTitle,
       notes: userNotes,
       context: labContext,
-      modules: labModules
+      modules: labModules,
+      type: mediaType
     };
     localStorage.setItem('lecture-lab-data', JSON.stringify(dataToSave));
-  }, [steps, graphData, videoUrl, videoTitle, userNotes, labContext, labModules]);
+  }, [steps, graphData, videoUrl, videoTitle, userNotes, labContext, labModules, mediaType]);
 
 
   // Handle Progress Removed
@@ -255,14 +258,25 @@ function App() {
       const input = fileInput || transcriptInput;
 
       // 1. If user uploaded a file, play it in the player!
+      // 1. If user uploaded a file, play it in the player!
       if (fileInput) {
         const objectUrl = URL.createObjectURL(fileInput);
         setVideoUrl(objectUrl);
+        
+        if (fileInput.type === 'application/pdf') {
+            setMediaType('pdf');
+        } else if (fileInput.type.startsWith('audio')) {
+            setMediaType('audio');
+        } else {
+            setMediaType('video');
+        }
+
       } else if (typeof input === 'string') {
          // Auto-Sync: If input looks like a YT URL, update the main player
          const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/;
          if (input.match(youtubeRegex)) {
             setVideoUrl(input);
+            setMediaType('video');
          }
       }
 
@@ -504,7 +518,7 @@ function App() {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className={`text-xs font-mono ${isActive ? 'text-primary' : 'text-gray-500'}`}>
-                      {new Date(step.time * 1000).toISOString().substr(14, 5)}
+                      {mediaType === 'pdf' ? `Step ${originalIndex + 1}` : new Date(step.time * 1000).toISOString().substr(14, 5)}
                     </span>
                     {/* @ts-ignore */}
                     {step.completed ? <CheckCircle size={14} className="text-green-400" /> : <Circle size={14} className="text-gray-600" />}
@@ -563,13 +577,13 @@ function App() {
                             className="absolute inset-0 w-full h-full object-contain"
                         />
                      );
-                 } else if (fileInput && fileInput.type === 'application/pdf') {
+                 } else if (mediaType === 'pdf') {
                      return (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 bg-slate-900">
                              <FileText size={48} className="text-secondary mb-4 opacity-50" />
                              <h3 className="text-xl font-bold">Document Mode</h3>
-                             <p className="text-sm opacity-60 mt-2">{fileInput.name}</p>
-                             <p className="text-xs text-secondary mt-4 animate-pulse">Ready to Analyze</p>
+                             <p className="text-sm opacity-60 mt-2">Analyzed content ready.</p>
+                             <p className="text-xs text-secondary mt-4 animate-pulse">See Timeline & Notes</p>
                         </div>
                      );
                  } else {
