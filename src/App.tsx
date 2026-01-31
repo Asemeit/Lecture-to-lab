@@ -6,6 +6,12 @@ import { GhostOverlay } from './components/GhostOverlay';
 import { analyzeContent } from './services/GeminiAnalyzer';
 import { KnowledgeGraph } from './components/KnowledgeGraph';
 
+// Helper to get YouTube ID
+const getYouTubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+};
 // Initial Demo Data
 const INITIAL_STEPS = [
   { time: 0, title: 'Introduction', completed: true, code: null },
@@ -496,43 +502,30 @@ function App() {
 
           {/* Video Container - Fixed aspect ratio to prevent stretching */}
           <div className="relative w-full h-auto aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
-            {/* @ts-ignore: ReactPlayer types are mismatching with ref */}
-            <Player
-                  ref={playerRef}
-                  url={videoUrl}
-                  width="100%"
-                  height="100%"
-                  // light={true} // Reverted: Thumbnail failed to load for user. Using standard iframe.
-                  controls={true}
-                  onReady={() => {
-                      console.log("Player Ready");
-                      if (playerStatus !== 'playing') setPlayerStatus('ready');
-                  }}
-                  onStart={() => {
-                    console.log("Player Started");
-                    setPlayerStatus('playing');
-                  }}
-                  onPlay={() => {
-                    setPlayerStatus('playing');
-                  }}
-                  onPause={() => {
-                    // Stay in 'playing' or switch to 'ready'? 'ready' implies waiting.
-                    // Let's keep it minimal.
-                  }}
-                  onBuffer={() => console.log("Buffering")}
-                  onProgress={handleProgress}
-                  onError={(e: any) => {
-                      console.error("Player Error:", e);
-                      setPlayerStatus('error');
-                      setPlayerError("Video Unavailable (Check URL)");
-                  }}
-                  style={{ position: 'absolute', top: 0, left: 0 }}
-                  config={{
-                    youtube: {
-                      playerVars: { showinfo: 1, origin: window.location.origin }
-                    }
-                  }}
-            />
+            
+             {/* NATIVE IFRAME FALLBACK */}
+             {(() => {
+                 const videoId = getYouTubeId(videoUrl);
+                 return videoId ? (
+                    <iframe 
+                        width="100%" 
+                        height="100%" 
+                        src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`}
+                        title="YouTube video player" 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerPolicy="strict-origin-when-cross-origin" 
+                        allowFullScreen
+                        className="absolute inset-0 w-full h-full"
+                    ></iframe>
+                 ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+                        Invalid YouTube URL
+                    </div>
+                 );
+             })()}
+
+            {/* STATUS OVERLAY - Simplified for Iframe */}
 
             {/* STATUS OVERLAY */}
             <AnimatePresence>
