@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 // import ReactPlayer from 'react-player'; // Unused
-import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download, Search } from 'lucide-react';
+import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download, Search, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GhostOverlay } from './components/GhostOverlay';
 import { analyzeContent } from './services/GeminiAnalyzer';
@@ -357,7 +357,7 @@ function App() {
               <div className="mb-4">
                 <input
                   type="file"
-                  accept="video/*,audio/*"
+                  accept="video/*,audio/*,application/pdf"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
@@ -562,6 +562,15 @@ function App() {
                             controls
                             className="absolute inset-0 w-full h-full object-contain"
                         />
+                     );
+                 } else if (fileInput && fileInput.type === 'application/pdf') {
+                     return (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 bg-slate-900">
+                             <FileText size={48} className="text-secondary mb-4 opacity-50" />
+                             <h3 className="text-xl font-bold">Document Mode</h3>
+                             <p className="text-sm opacity-60 mt-2">{fileInput.name}</p>
+                             <p className="text-xs text-secondary mt-4 animate-pulse">Ready to Analyze</p>
+                        </div>
                      );
                  } else {
                     return (
