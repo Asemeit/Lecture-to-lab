@@ -58,7 +58,9 @@ function App() {
   const Player = ReactPlayer as any;
 
   // AI State
-  const [steps, setSteps] = useState(INITIAL_STEPS);
+  const [steps, setSteps] = useState<any[]>(INITIAL_STEPS);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [labContext, setLabContext] = useState<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [graphData, setGraphData] = useState<any>({ nodes: [], links: [] });
 
@@ -80,17 +82,19 @@ function App() {
   const [videoTitle, setVideoTitle] = useState("React Tutorial (Demo)");
 
   // Persistence: Load data from localStorage on mount
+  // Persistence: Load data from localStorage on mount
   useEffect(() => {
     const savedData = localStorage.getItem('lecture-lab-data');
     if (savedData) {
       try {
-        const { steps: savedSteps, graph: savedGraph, url: savedUrl, title: savedTitle, notes: savedNotes } = JSON.parse(savedData);
+        const { steps: savedSteps, graph: savedGraph, url: savedUrl, title: savedTitle, notes: savedNotes, context: savedContext } = JSON.parse(savedData);
         if (savedSteps) setSteps(savedSteps);
         if (savedGraph) setGraphData(savedGraph);
         if (savedUrl) setVideoUrl(savedUrl);
         if (savedTitle) setVideoTitle(savedTitle);
         if (savedNotes) setUserNotes(savedNotes);
-        // On reload, we require interaction again to play, but data is there.
+        if (savedContext) setLabContext(savedContext);
+        
         console.log("Loaded saved session from LocalStorage");
       } catch (e) {
         console.error("Failed to parse local storage data", e);
@@ -106,10 +110,11 @@ function App() {
       graph: graphData,
       url: videoUrl,
       title: videoTitle,
-      notes: userNotes
+      notes: userNotes,
+      context: labContext
     };
     localStorage.setItem('lecture-lab-data', JSON.stringify(dataToSave));
-  }, [steps, graphData, videoUrl, videoTitle, userNotes]);
+  }, [steps, graphData, videoUrl, videoTitle, userNotes, labContext]);
 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -138,14 +143,61 @@ function App() {
   };
 
   const handleExport = () => {
-    const markdownContent = `# Analysis: ${videoUrl}\n\n` +
-      steps.map(s => `## ${s.time}s - ${s.title}\n${s.completed ? '[x]' : '[ ]'} ${s.title}\n\n${s.code ? '```jsx\n' + s.code + '\n```' : ''}`).join('\n\n');
+    // 1. Header
+    let md = `# 🧪 ${videoTitle}\n\n`;
+    md += `**Date:** ${new Date().toLocaleDateString()}\n`;
+    md += `**Source:** ${videoUrl}\n\n`;
     
-    const blob = new Blob([markdownContent], { type: 'text/markdown' });
+    // 2. Lab Context (Glossary, Prerequisites)
+    if (labContext) {
+       md += `## 📚 Lab Context\n`;
+       if (labContext.summary) md += `> **Goal:** ${labContext.summary}\n\n`;
+             
+       if (labContext.prerequisites && labContext.prerequisites.length > 0) {
+           md += `### 🛠️ Prerequisites\n`;
+           labContext.prerequisites.forEach((p: string) => md += `- ${p}\n`);
+           md += `\n`;
+       }
+
+       if (labContext.constants && labContext.constants.length > 0) {
+           md += `### 🔢 Constants & Variables\n`;
+           md += `| Name | Value |\n|---|---|\n`;
+           labContext.constants.forEach((c: any) => md += `| \`${c.name}\` | \`${c.value}\` |\n`);
+           md += `\n`;
+       }
+       
+       if (labContext.boilerplate) {
+           md += `### 🏗️ Setup Script\nRun this before starting:\n`;
+           md += '```javascript\n' + labContext.boilerplate + '\n```\n\n';
+       }
+    }
+
+    // 3. User Notes
+    if (userNotes) {
+        md += `## 📝 My Notes\n${userNotes}\n\n`;
+    }
+
+    // 4. Step-by-Step Guide
+    md += `## 🪜 Step-by-Step Lab\n\n`;
+    steps.forEach((s, i) => {
+        md += `### ${i+1}. ${s.title} (t=${s.time}s)\n`;
+        if (s.description) md += `*${s.description}*\n\n`;
+        if (s.theoreticalContext) md += `> **Theory:** ${s.theoreticalContext}\n\n`;
+        if (s.safetyWarning) md += `⚠️ **WARNING:** ${s.safetyWarning}\n\n`;
+        
+        md += `**Status:** ${s.completed ? '[x] Completed' : '[ ] Pending'}\n`;
+        
+        if (s.code) {
+            md += '\n```javascript\n' + s.code + '\n```\n';
+        }
+        md += `\n---\n\n`;
+    });
+
+    const blob = new Blob([md], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'lecture-notes.md';
+    a.download = `Lab-Manual-${new Date().toISOString().slice(0,10)}.md`;
     a.click();
   };
 
@@ -177,10 +229,9 @@ function App() {
         // Ensure graph nodes/links are populated safely
         setGraphData(data.graph || { nodes: [], links: [] });
         
-        // Update Title
-        if (data.title) {
-            setVideoTitle(data.title);
-        }
+        // Update Title & Context
+        if (data.title) setVideoTitle(data.title);
+        if (data.labContext) setLabContext(data.labContext);
 
         setShowAnalyzeModal(false);
         setGhostCode("");

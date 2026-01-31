@@ -44,22 +44,34 @@ export default async function handler(request, response) {
       }
     }
 
-    // Reconstruct the prompt parts
+    // Reconstruct the prompt parts - UPGRADED INSTRUCTOR MODE
     const PROMPT_TEMPLATE = `
-You are an expert Educational Content Analyzer.
-Your task is to analyze the provided Video Input (Text Transcript or File) and extract structured data for an interactive dashboard.
+You are an expert Automated Lab Instructor for "Lecture-to-Lab".
+Your goal is to transform passive video content into an active, runnable "Lab Manual".
+Do not just summarize. EXTRACT actionable steps, specific constants, and critical safety warnings.
 
 RETURN JSON ONLY. NO MARKDOWN.
 
 Structure:
 {
-  "title": "Short Video Title",
+  "title": "Lab Title",
+  "labContext": {
+      "summary": "One sentence goal of this lab",
+      "prerequisites": ["List of installed tools needed, e.g. Node.js"],
+      "constants": [
+          { "name": "API_KEY", "value": "Placeholder/Real Value" },
+          { "name": "PI", "value": "3.14159" }
+      ],
+      "boilerplate": "String of setup code (imports, initial config) that needs to be run BEFORE step 1"
+  },
   "steps": [
     { 
       "time": number (seconds), 
-      "title": "Short Step Name", 
-      "completed": false, 
-      "code": "Optional string of code if this step involves coding. null if not." 
+      "title": "Actionable Step Title (Start with Verb)", 
+      "description": "Brief explanation of WHAT to do.",
+      "code": "The exact code to type/run. null if not applicable.",
+      "safetyWarning": "Optional warning if dangerous (e.g. 'Don't commit API keys', 'Add acid to water')",
+      "theoreticalContext": "Optional 1-sentence theory behind this step (The 'Why')"
     }
   ],
   "graph": {
@@ -73,10 +85,11 @@ Structure:
 }
 
 RULES:
-1. "time" must be in seconds (e.g., 1:05 -> 65).
-2. "code" should be a valid code snippet if mentioned, otherwise null.
-3. Extract at least 5 key steps.
-4. Extract at least 5 key concepts for the graph.
+1. "time" must be in seconds.
+2. "boilerplate" should be the *setup* code (imports, variable inits) that applies to the whole lab.
+3. EXTRACT VARIABLES: If the video mentions specific numbers, strings, or config values, put them in "constants".
+4. SAFETY: If the video mentions security (API keys) or physical safety, perform a "Safety Check" and add a warning.
+5. Generate at least 5-10 detailed steps.
 `;
 
     let promptParts = [PROMPT_TEMPLATE];
