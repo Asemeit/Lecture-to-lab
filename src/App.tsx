@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 // import ReactPlayer from 'react-player'; // Unused
 import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
