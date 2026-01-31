@@ -53,6 +53,9 @@ function App() {
   const [activeTab, setActiveTab] = useState<'timeline' | 'notes'>('timeline');
   const [userNotes, setUserNotes] = useState("");
 
+  const [playerStatus, setPlayerStatus] = useState<'loading' | 'ready' | 'playing' | 'error'>('loading');
+  const [playerError, setPlayerError] = useState("");
+
   // Force ReactPlayer to accept any ref to avoid TypeScript errors in build
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Player = ReactPlayer as any;
@@ -489,21 +492,28 @@ function App() {
                   width="100%"
                   height="100%"
                   controls={true}
-                  onReady={() => console.log("Player Ready")}
+                  onReady={() => {
+                      console.log("Player Ready");
+                      if (playerStatus !== 'playing') setPlayerStatus('ready');
+                  }}
                   onStart={() => {
                     console.log("Player Started");
-                    // setPlaying(true);
-                    // setHasStarted(true);
+                    setPlayerStatus('playing');
                   }}
                   onPlay={() => {
-                    // setPlaying(true);
-                    // setHasStarted(true);
+                    setPlayerStatus('playing');
                   }}
                   onPause={() => {
-                    // setPlaying(false);
+                    // Stay in 'playing' or switch to 'ready'? 'ready' implies waiting.
+                    // Let's keep it minimal.
                   }}
+                  onBuffer={() => console.log("Buffering")}
                   onProgress={handleProgress}
-                  onError={(e: any) => console.error("Player Error:", e)}
+                  onError={(e: any) => {
+                      console.error("Player Error:", e);
+                      setPlayerStatus('error');
+                      setPlayerError("Video Unavailable (Check URL)");
+                  }}
                   style={{ position: 'absolute', top: 0, left: 0 }}
                   config={{
                     youtube: {
@@ -512,6 +522,40 @@ function App() {
                   }}
             />
 
+            {/* STATUS OVERLAY */}
+            <AnimatePresence>
+                {playerStatus === 'loading' && (
+                    <motion.div 
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm"
+                    >
+                        <Loader2 className="text-primary animate-spin mb-2" size={32} />
+                        <span className="text-xs text-gray-400 font-mono tracking-widest">CONNECTING STREAM...</span>
+                    </motion.div>
+                )}
+                {playerStatus === 'error' && (
+                    <motion.div 
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-red-900/20 backdrop-blur-md"
+                    >
+                        <X className="text-red-500 mb-2" size={32} />
+                        <span className="text-xs text-red-400 font-bold mb-1">PLAYBACK ERROR</span>
+                        <span className="text-[10px] text-red-300 font-mono">{playerError}</span>
+                    </motion.div>
+                )}
+                {playerStatus === 'ready' && (
+                     <motion.div 
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
+                    >
+                        <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                             <span className="text-[10px] uppercase font-bold tracking-widest text-white/80">Stream Ready</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            
             {/* GHOST OVERLAY */}
             <GhostOverlay currentCode={ghostCode} isVisible={showGhost} />
           </div>
