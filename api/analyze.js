@@ -45,51 +45,61 @@ export default async function handler(request, response) {
     }
 
     // Reconstruct the prompt parts - UPGRADED INSTRUCTOR MODE
-    const PROMPT_TEMPLATE = `
+const PROMPT_TEMPLATE = `
 You are an expert Automated Lab Instructor for "Lecture-to-Lab".
 Your goal is to transform passive video content into an active, runnable "Lab Manual".
-Do not just summarize. EXTRACT actionable steps, specific constants, and critical safety warnings.
+EXTRACT actionable steps, specific constants, critical safety warnings, and check-on-learning quizzes.
 
 RETURN JSON ONLY. NO MARKDOWN.
 
 Structure:
 {
   "title": "Lab Title",
+  "data_model_version": "2.0",
   "labContext": {
       "summary": "One sentence goal of this lab",
-      "prerequisites": ["List of installed tools needed, e.g. Node.js"],
+      "prerequisites": ["List of installed tools needed"],
       "constants": [
-          { "name": "API_KEY", "value": "Placeholder/Real Value" },
-          { "name": "PI", "value": "3.14159" }
+          { "name": "API_KEY", "value": "Placeholder/Real Value" }
       ],
-      "boilerplate": "String of setup code (imports, initial config) that needs to be run BEFORE step 1"
+      "boilerplate": "Setup code (imports, config) needed BEFORE step 1"
   },
-  "steps": [
-    { 
-      "time": number (seconds), 
-      "title": "Actionable Step Title (Start with Verb)", 
-      "description": "Brief explanation of WHAT to do.",
-      "code": "The exact code to type/run. null if not applicable.",
-      "safetyWarning": "Optional warning if dangerous (e.g. 'Don't commit API keys', 'Add acid to water')",
-      "theoreticalContext": "Optional 1-sentence theory behind this step (The 'Why')"
-    }
+  "modules": [
+      {
+          "title": "Module 1: [Topic]",
+          "summary": "Brief summary",
+          "steps": [
+            { 
+              "time": number (seconds), 
+              "title": "Actionable Step Title (Start with Verb)", 
+              "description": "Brief explanation of WHAT to do.",
+              "code": "The FULL code block to write/run.",
+              "code_diff": "Optional. Only the changed lines in diff format (e.g. '+ new line\\n- old line'). Use if modifying existing code.",
+              "visual_diagram": "Optional. ASCII art or Mermaid syntax string showing Widget Tree or Architecture for this step.",
+              "safetyWarning": "Optional warning if dangerous",
+              "theoreticalContext": "Optional 1-sentence theory behind this step"
+            }
+          ],
+          "quiz": {
+              "question": "Concept check question for this module",
+              "options": ["A) ...", "B) ...", "C) ..."],
+              "answer": "Correct Option Text"
+          }
+      }
   ],
   "graph": {
-    "nodes": [
-      { "id": "Concept Name", "val": number (importance 1-10) }
-    ],
-    "links": [
-      { "source": "Concept Name", "target": "Related Concept Name" }
-    ]
+    "nodes": [ { "id": "Concept Name", "val": number (importance 1-10) } ],
+    "links": [ { "source": "Concept A", "target": "Concept B" } ]
   }
 }
 
 RULES:
-1. "time" must be in seconds.
-2. "boilerplate" should be the *setup* code (imports, variable inits) that applies to the whole lab.
-3. EXTRACT VARIABLES: If the video mentions specific numbers, strings, or config values, put them in "constants".
-4. SAFETY: If the video mentions security (API keys) or physical safety, perform a "Safety Check" and add a warning.
-5. Generate at least 5-10 detailed steps.
+1. "time" (seconds).
+2. "boilerplate" = global setup.
+3. **smart_diffs**: If a step modifies code, provide "code_diff" to show exactly what changed.
+4. **visuals**: If building a UI (like Flutter/React), provide a "visual_diagram" (ASCII/Tree) of the component structure.
+5. **quiz**: Generate 1 short conceptual quiz at the end of each module to verify learning.
+6. **modules**: Group steps logically (e.g. "Setup", "UI", "Logic").
 `;
 
     let promptParts = [PROMPT_TEMPLATE];

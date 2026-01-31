@@ -82,6 +82,8 @@ function App() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [labContext, setLabContext] = useState<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [labModules, setLabModules] = useState<any[]>([]); // Level 2: Modules
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [graphData, setGraphData] = useState<any>({ nodes: [], links: [] });
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -105,13 +107,14 @@ function App() {
     const savedData = localStorage.getItem('lecture-lab-data');
     if (savedData) {
       try {
-        const { steps: savedSteps, graph: savedGraph, url: savedUrl, title: savedTitle, notes: savedNotes, context: savedContext } = JSON.parse(savedData);
+        const { steps: savedSteps, graph: savedGraph, url: savedUrl, title: savedTitle, notes: savedNotes, context: savedContext, modules: savedModules } = JSON.parse(savedData);
         if (savedSteps) setSteps(savedSteps);
         if (savedGraph) setGraphData(savedGraph);
         if (savedUrl) setVideoUrl(savedUrl);
         if (savedTitle) setVideoTitle(savedTitle);
         if (savedNotes) setUserNotes(savedNotes);
         if (savedContext) setLabContext(savedContext);
+        if (savedModules) setLabModules(savedModules);
         
         console.log("Loaded saved session from LocalStorage");
       } catch (e) {
@@ -129,10 +132,11 @@ function App() {
       url: videoUrl,
       title: videoTitle,
       notes: userNotes,
-      context: labContext
+      context: labContext,
+      modules: labModules
     };
     localStorage.setItem('lecture-lab-data', JSON.stringify(dataToSave));
-  }, [steps, graphData, videoUrl, videoTitle, userNotes, labContext]);
+  }, [steps, graphData, videoUrl, videoTitle, userNotes, labContext, labModules]);
 
 
   // Handle Progress Removed
@@ -150,6 +154,7 @@ function App() {
              
        if (labContext.prerequisites && labContext.prerequisites.length > 0) {
            md += `### 🛠️ Prerequisites\n`;
+           // eslint-disable-next-line @typescript-eslint/no-explicit-any
            labContext.prerequisites.forEach((p: string) => md += `- ${p}\n`);
            md += `\n`;
        }
@@ -157,6 +162,7 @@ function App() {
        if (labContext.constants && labContext.constants.length > 0) {
            md += `### 🔢 Constants & Variables\n`;
            md += `| Name | Value |\n|---|---|\n`;
+           // eslint-disable-next-line @typescript-eslint/no-explicit-any
            labContext.constants.forEach((c: any) => md += `| \`${c.name}\` | \`${c.value}\` |\n`);
            md += `\n`;
        }
@@ -172,21 +178,65 @@ function App() {
         md += `## 📝 My Notes\n${userNotes}\n\n`;
     }
 
-    // 4. Step-by-Step Guide
+    // 4. Lab Content (Modules or Steps)
     md += `## 🪜 Step-by-Step Lab\n\n`;
-    steps.forEach((s, i) => {
-        md += `### ${i+1}. ${s.title} (t=${s.time}s)\n`;
-        if (s.description) md += `*${s.description}*\n\n`;
-        if (s.theoreticalContext) md += `> **Theory:** ${s.theoreticalContext}\n\n`;
-        if (s.safetyWarning) md += `⚠️ **WARNING:** ${s.safetyWarning}\n\n`;
-        
-        md += `**Status:** ${s.completed ? '[x] Completed' : '[ ] Pending'}\n`;
-        
-        if (s.code) {
-            md += '\n```javascript\n' + s.code + '\n```\n';
-        }
-        md += `\n---\n\n`;
-    });
+
+    if (labModules && labModules.length > 0) {
+        // LEVEL 2: MODULAR EXPORT
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        labModules.forEach((mod: any, mIdx: number) => {
+            md += `### Module ${mIdx + 1}: ${mod.title}\n`;
+            if (mod.summary) md += `*${mod.summary}* \n\n`;
+
+            if (mod.steps) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                mod.steps.forEach((s: any, i: number) => {
+                    md += `#### ${mIdx + 1}.${i+1} ${s.title} (t=${s.time}s)\n`;
+                    if (s.description) md += `${s.description}\n\n`;
+                    if (s.theoreticalContext) md += `> **Theory:** ${s.theoreticalContext}\n\n`;
+                    if (s.safetyWarning) md += `⚠️ **WARNING:** ${s.safetyWarning}\n\n`;
+                    
+                    if (s.code_diff) {
+                        md += `**Changes:**\n\`\`\`diff\n${s.code_diff}\n\`\`\`\n\n`;
+                    }
+                    
+                    if (s.code) {
+                         md += `**Full Code:**\n\`\`\`javascript\n${s.code}\n\`\`\`\n`;
+                    }
+
+                    if (s.visual_diagram) {
+                        md += `**Visual Map:**\n\`\`\`mermaid\n${s.visual_diagram}\n\`\`\`\n\n`;
+                    }
+
+                    md += `\n---\n\n`;
+                });
+            }
+
+            if (mod.quiz) {
+                md += `#### 🧠 Pop Quiz\n`;
+                md += `**Q:** ${mod.quiz.question}\n\n`;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                mod.quiz.options?.forEach((opt: string) => md += `- [ ] ${opt}\n`);
+                md += `\n<details>\n<summary>👀 Reveal Answer</summary>\n\n**${mod.quiz.answer}**\n\n</details>\n\n---\n\n`;
+            }
+        });
+
+    } else {
+        // LEGACY: FLAT STEPS
+        steps.forEach((s, i) => {
+            md += `### ${i+1}. ${s.title} (t=${s.time}s)\n`;
+            if (s.description) md += `*${s.description}*\n\n`;
+            if (s.theoreticalContext) md += `> **Theory:** ${s.theoreticalContext}\n\n`;
+            if (s.safetyWarning) md += `⚠️ **WARNING:** ${s.safetyWarning}\n\n`;
+            
+            md += `**Status:** ${s.completed ? '[x] Completed' : '[ ] Pending'}\n`;
+            
+            if (s.code) {
+                md += '\n```javascript\n' + s.code + '\n```\n';
+            }
+            md += `\n---\n\n`;
+        });
+    }
 
     const blob = new Blob([md], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -219,8 +269,19 @@ function App() {
       const data = await analyzeContent(input);
       console.log("AI Data Response:", data);
 
-      if (data.steps) {
-        setSteps(data.steps);
+        // Level 2: Handle Modules
+        if (data.modules) {
+            setLabModules(data.modules);
+            // Flatten for timeline compatibility
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const flatSteps = data.modules.flatMap((m: any) => m.steps);
+            setSteps(flatSteps);
+        } else if (data.steps) {
+            // Legacy / Fallback
+            setSteps(data.steps);
+            setLabModules([]); 
+        }
+
         // Ensure graph nodes/links are populated safely
         setGraphData(data.graph || { nodes: [], links: [] });
         
@@ -248,7 +309,6 @@ function App() {
         } else {
           // alert("Analysis Complete! Timeline & Graph Updated."); // Removing alert for smoother experience
         }
-      }
     } catch (e: any) {
       alert(`Analysis Failed: ${e.message}`);
       console.error(e);
