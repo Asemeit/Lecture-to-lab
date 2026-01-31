@@ -258,14 +258,14 @@ function App() {
       const input = fileInput || transcriptInput;
 
       // 1. If user uploaded a file, play it in the player!
-      // 1. If user uploaded a file, play it in the player!
       if (fileInput) {
         const objectUrl = URL.createObjectURL(fileInput);
         setVideoUrl(objectUrl);
         
-        if (fileInput.type === 'application/pdf') {
+        // Robust PDF Check (Extension + MIME)
+        if (fileInput.type === 'application/pdf' || fileInput.name.toLowerCase().endsWith('.pdf')) {
             setMediaType('pdf');
-        } else if (fileInput.type.startsWith('audio')) {
+        } else if (fileInput.type.startsWith('audio') || fileInput.name.match(/\.(mp3|wav|ogg)$/i)) {
             setMediaType('audio');
         } else {
             setMediaType('video');
@@ -569,14 +569,7 @@ function App() {
                             className="absolute inset-0 w-full h-full"
                         ></iframe>
                     );
-                 } else if (videoUrl && videoUrl.startsWith('blob:')) {
-                     return (
-                        <video 
-                            src={videoUrl}
-                            controls
-                            className="absolute inset-0 w-full h-full object-contain"
-                        />
-                     );
+
                  } else if (mediaType === 'pdf') {
                      return (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 bg-slate-900">
@@ -585,6 +578,14 @@ function App() {
                              <p className="text-sm opacity-60 mt-2">Analyzed content ready.</p>
                              <p className="text-xs text-secondary mt-4 animate-pulse">See Timeline & Notes</p>
                         </div>
+                     );
+                 } else if (videoUrl && videoUrl.startsWith('blob:')) {
+                     return (
+                        <video 
+                            src={videoUrl}
+                            controls
+                            className="absolute inset-0 w-full h-full object-contain"
+                        />
                      );
                  } else {
                     return (
