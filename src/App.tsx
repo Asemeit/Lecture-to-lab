@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import ReactPlayer from 'react-player';
+// import ReactPlayer from 'react-player'; // Unused
 import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GhostOverlay } from './components/GhostOverlay';
@@ -60,7 +60,7 @@ function App() {
   const [userNotes, setUserNotes] = useState("");
 
   const [playerStatus, setPlayerStatus] = useState<'loading' | 'ready' | 'playing' | 'error'>('loading');
-  const [playerError, setPlayerError] = useState("");
+  // const [playerError, setPlayerError] = useState(""); // Unused
 
   // Failsafe: Reset loading state if it takes too long
   useEffect(() => {
@@ -75,7 +75,7 @@ function App() {
 
   // Force ReactPlayer to accept any ref to avoid TypeScript errors in build
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Player = ReactPlayer as any;
+  // const Player = ReactPlayer as any; // Unused
 
   // AI State
   const [steps, setSteps] = useState<any[]>(INITIAL_STEPS);
@@ -89,10 +89,8 @@ function App() {
   const [transcriptInput, setTranscriptInput] = useState("");
   const [fileInput, setFileInput] = useState<File | null>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_currentTime, setCurrentTime] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const playerRef = useRef<any>(null);
+  // const [_currentTime, setCurrentTime] = useState(0); // Unused
+  // const playerRef = useRef<any>(null); // Unused
   const [activeStep, setActiveStep] = useState(0);
 
   // Ghost Code State
@@ -137,30 +135,7 @@ function App() {
   }, [steps, graphData, videoUrl, videoTitle, userNotes, labContext]);
 
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleProgress = (state: any) => {
-    const t = state.playedSeconds;
-    setCurrentTime(t);
-
-    // Bi-directional Sync: Find the active step based on time
-    const currentIdx = steps.findIndex((step, index) => {
-      const nextStep = steps[index + 1];
-      return t >= step.time && (!nextStep || t < nextStep.time);
-    });
-
-    if (currentIdx !== -1 && currentIdx !== activeStep) {
-      setActiveStep(currentIdx);
-
-      // Update Ghost Code based on the new step
-      const step = steps[currentIdx];
-      if (step.code) {
-        setGhostCode(step.code);
-        setShowGhost(true);
-      } else {
-        setShowGhost(false);
-      }
-    }
-  };
+  // Handle Progress Removed
 
   const handleExport = () => {
     // 1. Header
@@ -461,7 +436,7 @@ function App() {
                   className={`p-3 rounded-lg cursor-pointer border transition-all ${isActive ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'border-transparent hover:bg-white/5'}`}
                   onClick={() => {
                     console.log('Clicked step:', originalIndex, step.time);
-                    playerRef.current?.seekTo(step.time);
+                    // playerRef.current?.seekTo(step.time); // Disabled for iframe
                     setActiveStep(originalIndex);
                   }}
                   whileHover={{ scale: 1.02 }}
@@ -503,26 +478,38 @@ function App() {
           {/* Video Container - Fixed aspect ratio to prevent stretching */}
           <div className="relative w-full h-auto aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
             
-             {/* NATIVE IFRAME FALLBACK */}
+             {/* NATIVE IFRAME / VIDEO FALLBACK */}
              {(() => {
                  const videoId = getYouTubeId(videoUrl);
-                 return videoId ? (
-                    <iframe 
-                        width="100%" 
-                        height="100%" 
-                        src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`}
-                        title="YouTube video player" 
-                        frameBorder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        referrerPolicy="strict-origin-when-cross-origin" 
-                        allowFullScreen
-                        className="absolute inset-0 w-full h-full"
-                    ></iframe>
-                 ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-                        Invalid YouTube URL
-                    </div>
-                 );
+                 if (videoId) {
+                    return (
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`}
+                            title="YouTube video player" 
+                            frameBorder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            referrerPolicy="strict-origin-when-cross-origin" 
+                            allowFullScreen
+                            className="absolute inset-0 w-full h-full"
+                        ></iframe>
+                    );
+                 } else if (videoUrl && videoUrl.startsWith('blob:')) {
+                     return (
+                        <video 
+                            src={videoUrl}
+                            controls
+                            className="absolute inset-0 w-full h-full object-contain"
+                        />
+                     );
+                 } else {
+                    return (
+                        <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+                            Invalid Video Source
+                        </div>
+                    );
+                 }
              })()}
 
             {/* STATUS OVERLAY - Simplified for Iframe */}
