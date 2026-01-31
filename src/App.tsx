@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactPlayer from 'react-player';
-import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download } from 'lucide-react';
+import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GhostOverlay } from './components/GhostOverlay';
 import { analyzeContent } from './services/GeminiAnalyzer';
@@ -49,6 +49,7 @@ useEffect(() => {
 function App() {
   const [cinemaMode, setCinemaMode] = useState(false);
   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=k3Vfj-e1Ma4");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Force ReactPlayer to accept any ref to avoid TypeScript errors in build
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -206,6 +207,10 @@ function App() {
     }
   };
 
+  const filteredSteps = steps.filter(step => 
+    step.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className={`min-h-screen bg-background text-white transition-all duration-700 ${cinemaMode ? 'brightness-50' : ''}`}>
 
@@ -334,25 +339,42 @@ function App() {
 
         {/* LEFT: TIMELINE (3 cols) */}
         <section className={`col-span-3 flex flex-col gap-4 transition-opacity duration-500 z-10 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
-          <h2 className="text-sm uppercase tracking-widest text-gray-400 font-semibold mb-2">Tutorial Timeline</h2>
+          <div className="flex items-center justify-between">
+             <h2 className="text-sm uppercase tracking-widest text-gray-400 font-semibold">Tutorial Timeline</h2>
+             <span className="text-xs text-gray-600 font-mono">{filteredSteps.length} / {steps.length}</span>
+          </div>
+          
+          {/* SEARCH BAR */}
+          <div className="relative">
+             <Search className="absolute left-3 top-2.5 text-gray-500" size={14} />
+             <input 
+                type="text" 
+                placeholder="Filter steps..." 
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-9 pr-3 text-xs focus:outline-none focus:border-secondary/50 transition-colors"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+             />
+          </div>
+
           <div className="glass-panel rounded-xl p-4 flex-1 overflow-y-auto space-y-3">
-            {steps.map((step, idx) => (
+            {filteredSteps.map((step, idx) => {
+              const originalIndex = steps.indexOf(step);
+              const isActive = activeStep === originalIndex;
+
+              return (
               <motion.div
-                key={idx}
-                className={`p-3 rounded-lg cursor-pointer border transition-all ${idx === activeStep ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'border-transparent hover:bg-white/5'}`}
+                key={originalIndex}
+                className={`p-3 rounded-lg cursor-pointer border transition-all ${isActive ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'border-transparent hover:bg-white/5'}`}
                 onClick={() => {
-                  console.log('Clicked step:', idx, step.time);
+                  console.log('Clicked step:', originalIndex, step.time);
                   playerRef.current?.seekTo(step.time);
-                  // Ensure video plays when jumping to a step
-                  // setPlaying(true); 
-                  // setHasStarted(true); 
-                  setActiveStep(idx);
+                  setActiveStep(originalIndex);
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-xs font-mono ${idx === activeStep ? 'text-primary' : 'text-gray-500'}`}>
+                  <span className={`text-xs font-mono ${isActive ? 'text-primary' : 'text-gray-500'}`}>
                     {new Date(step.time * 1000).toISOString().substr(14, 5)}
                   </span>
                   {/* @ts-ignore */}
@@ -360,7 +382,8 @@ function App() {
                 </div>
                 <div className="font-medium text-sm">{step.title}</div>
               </motion.div>
-            ))}
+            );
+            })}
           </div>
         </section>
 
