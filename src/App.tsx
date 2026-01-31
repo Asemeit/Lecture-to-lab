@@ -56,6 +56,17 @@ function App() {
   const [playerStatus, setPlayerStatus] = useState<'loading' | 'ready' | 'playing' | 'error'>('loading');
   const [playerError, setPlayerError] = useState("");
 
+  // Failsafe: Reset loading state if it takes too long
+  useEffect(() => {
+      if (playerStatus === 'loading') {
+          const timer = setTimeout(() => {
+              console.warn("Player loading timed out. Forcing ready state.");
+              setPlayerStatus('ready');
+          }, 3000); // 3 seconds timeout
+          return () => clearTimeout(timer);
+      }
+  }, [playerStatus]);
+
   // Force ReactPlayer to accept any ref to avoid TypeScript errors in build
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Player = ReactPlayer as any;
@@ -528,10 +539,13 @@ function App() {
                 {playerStatus === 'loading' && (
                     <motion.div 
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm"
+                        className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm cursor-pointer"
+                        onClick={() => setPlayerStatus('ready')} // Manual override
+                        title="Click to force load"
                     >
                         <Loader2 className="text-primary animate-spin mb-2" size={32} />
                         <span className="text-xs text-gray-400 font-mono tracking-widest">CONNECTING STREAM...</span>
+                        <span className="text-[10px] text-gray-600 mt-2">(Click to skip)</span>
                     </motion.div>
                 )}
                 {playerStatus === 'error' && (
