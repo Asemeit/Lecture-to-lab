@@ -343,9 +343,9 @@ function App() {
         {showAnalyzeModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[100] flex items-start justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
           >
-            <div className="bg-slate-900 border border-white/10 p-6 rounded-2xl w-full max-w-lg shadow-2xl relative">
+            <div className="bg-slate-900 border border-white/10 p-6 rounded-2xl w-full max-w-lg shadow-2xl relative mt-20 mb-10">
               <button onClick={() => setShowAnalyzeModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
                 <X size={20} />
               </button>
@@ -406,39 +406,49 @@ function App() {
       </AnimatePresence>
 
       {/* HEADER */}
-      <header className="fixed top-0 w-full z-50 glass-panel border-b border-white/5 h-16 flex items-center px-6 justify-between gap-8">
-        <div className="flex items-center gap-2 min-w-fit">
-          <Brain className="text-secondary" />
-          <span className="font-bold text-lg tracking-wider">Lecture-to-Lab</span>
+      <header className="fixed top-0 w-full z-50 glass-panel border-b border-white/5 flex flex-col md:flex-row items-center px-4 py-3 md:h-16 md:px-6 justify-between gap-4 transition-all duration-300">
+        <div className="flex w-full md:w-auto items-center justify-between">
+           <div className="flex items-center gap-2">
+              <Brain className="text-secondary" />
+              <span className="font-bold text-lg tracking-wider">Lecture-to-Lab</span>
+           </div>
+           {/* Mobile Cinema Toggle (moved here for space) */}
+           <div className="flex md:hidden items-center gap-3">
+               <button
+                 onClick={() => setCinemaMode(!cinemaMode)}
+                 className={`w-10 h-5 rounded-full p-0.5 transition-colors duration-300 ${cinemaMode ? 'bg-primary' : 'bg-white/10'}`}
+               >
+                 <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-300 ${cinemaMode ? 'translate-x-5' : 'translate-x-0'}`} />
+               </button>
+           </div>
         </div>
 
         {/* Search Bar */}
-        <div className="flex-1 max-w-2xl relative group flex gap-2">
+        <div className="w-full md:flex-1 max-w-2xl relative group flex gap-2">
           <input
             type="text"
-            placeholder="Paste YouTube Tutorial URL..."
-            className="flex-1 bg-white/5 border border-white/10 rounded-full py-2 px-4 focus:outline-none focus:border-primary/50 text-sm transition-all group-hover:bg-white/10"
+            placeholder="Paste YouTube Link..."
+            className="flex-1 bg-white/5 border border-white/10 rounded-full py-2 px-4 focus:outline-none focus:border-primary/50 text-sm transition-all group-hover:bg-white/10 w-full"
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
           />
 
           <button
             onClick={() => {
-              // Auto-fill the modal with the current URL if it's not the default demo
               if (videoUrl && !videoUrl.includes("k3Vfj-e1Ma4")) {
                  setTranscriptInput(videoUrl);
               }
               setShowAnalyzeModal(true);
             }}
-            className="bg-secondary/20 hover:bg-secondary/40 text-secondary border border-secondary/50 px-4 rounded-full text-xs font-bold transition-all flex items-center gap-2"
+            className="bg-secondary/20 hover:bg-secondary/40 text-secondary border border-secondary/50 px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2"
           >
             <Sparkles size={14} />
-            ANALYZE
+            <span className="hidden sm:inline">ANALYZE</span>
           </button>
         </div>
 
-        {/* Cinema Toggle & Export */}
-        <div className="flex items-center gap-3 min-w-fit">
+        {/* Desktop Controls */}
+        <div className="hidden md:flex items-center gap-3 min-w-fit">
           <button
              onClick={handleExport}
              className="bg-white/5 hover:bg-white/10 text-xs px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 transition-all"
@@ -459,7 +469,7 @@ function App() {
       </header>
 
       {/* MAIN GRID */}
-      <main className="pt-20 px-4 pb-6 min-h-screen flex flex-col gap-8 lg:grid lg:grid-cols-12 lg:px-6 lg:h-screen lg:overflow-hidden lg:gap-6">
+      <main className="pt-32 md:pt-20 px-4 pb-6 min-h-screen flex flex-col gap-8 lg:grid lg:grid-cols-12 lg:px-6 lg:h-screen lg:overflow-hidden lg:gap-6">
 
         {/* LEFT: TIMELINE (3 cols) */}
         <section className={`w-full h-[500px] order-2 lg:col-span-3 lg:h-[calc(100vh-8rem)] lg:order-1 flex flex-col gap-4 transition-opacity duration-500 z-10 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
