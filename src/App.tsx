@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 // import ReactPlayer from 'react-player'; // Unused
-import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download, Search, FileText } from 'lucide-react';
+import { Maximize, Brain, CheckCircle, Circle, Sparkles, X, Loader2, Download, Search, FileText, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GhostOverlay } from './components/GhostOverlay';
 import { analyzeContent } from './services/GeminiAnalyzer';
@@ -412,8 +412,20 @@ function App() {
               <Brain className="text-secondary" />
               <span className="font-bold text-lg tracking-wider">Lecture-to-Lab</span>
            </div>
-           {/* Mobile Cinema Toggle (moved here for space) */}
            <div className="flex md:hidden items-center gap-3">
+               <button
+                  onClick={() => {
+                      if (confirm("Reset App? This will clear all data.")) {
+                          localStorage.removeItem('lecture-lab-data');
+                          window.location.reload();
+                      }
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-gray-400 hover:text-red-400 hover:bg-red-500/20 transition-all border border-white/5"
+                  title="Reset Data"
+               >
+                  <Trash2 size={14} />
+               </button>
+
                <button
                  onClick={() => setCinemaMode(!cinemaMode)}
                  className={`w-10 h-5 rounded-full p-0.5 transition-colors duration-300 ${cinemaMode ? 'bg-primary' : 'bg-white/10'}`}
