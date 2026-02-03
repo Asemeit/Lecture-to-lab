@@ -450,6 +450,19 @@ function App() {
         {/* Desktop Controls */}
         <div className="hidden md:flex items-center gap-3 min-w-fit">
           <button
+             onClick={() => {
+                if (confirm("Reset App? This will clear all data.")) {
+                    localStorage.removeItem('lecture-lab-data');
+                    window.location.reload();
+                }
+             }}
+             className="bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-xs px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 transition-all group"
+             title="Reset / Clear Data"
+          >
+             <span className="text-gray-300 group-hover:text-red-400">Reset</span>
+          </button>
+
+          <button
              onClick={handleExport}
              className="bg-white/5 hover:bg-white/10 text-xs px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 transition-all"
              title="Download Notes"
