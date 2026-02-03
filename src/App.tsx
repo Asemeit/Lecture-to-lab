@@ -459,10 +459,10 @@ function App() {
       </header>
 
       {/* MAIN GRID */}
-      <main className="pt-20 px-6 pb-6 h-screen grid grid-cols-12 gap-6">
+      <main className="pt-20 px-4 pb-6 min-h-screen flex flex-col gap-8 lg:grid lg:grid-cols-12 lg:px-6 lg:h-screen lg:overflow-hidden lg:gap-6">
 
         {/* LEFT: TIMELINE (3 cols) */}
-        <section className={`col-span-3 flex flex-col gap-4 transition-opacity duration-500 z-10 h-[calc(100vh-8rem)] ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
+        <section className={`w-full h-[500px] order-2 lg:col-span-3 lg:h-[calc(100vh-8rem)] lg:order-1 flex flex-col gap-4 transition-opacity duration-500 z-10 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
           
           {/* TABS */}
           <div className="flex p-1 bg-white/5 rounded-lg">
@@ -546,7 +546,7 @@ function App() {
         </section>
 
         {/* CENTER: THEATER (6 cols) */}
-        <section className="col-span-6 flex flex-col relative">
+        <section className="w-full order-1 lg:col-span-6 lg:order-2 flex flex-col relative">
           {/* AMBIENT GLOW REMOVED */}
 
           {/* Video Container - Fixed aspect ratio to prevent stretching */}
@@ -628,7 +628,7 @@ function App() {
         </section>
 
         {/* RIGHT: KNOWLEDGE GRAPH (3 cols) */}
-        <section className={`col-span-3 flex flex-col gap-4 h-[500px] transition-opacity duration-500 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
+        <section className={`w-full h-[400px] order-3 lg:col-span-3 lg:h-[calc(100vh-8rem)] lg:order-3 flex flex-col gap-4 transition-opacity duration-500 ${cinemaMode ? 'opacity-20 hover:opacity-100' : ''}`}>
           <h2 className="text-sm uppercase tracking-widest text-gray-400 font-semibold mb-2">Knowledge Graph</h2>
           <div className="glass-panel rounded-xl flex-1 relative overflow-hidden">
             <KnowledgeGraph data={graphData} />
